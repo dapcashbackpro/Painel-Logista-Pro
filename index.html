@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAP CashBack - Lojista Gold Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --gold: #bd9354;
+            --gold-gradient: linear-gradient(135deg, #bd9354 0%, #e0c07a 45%, #b38b47 100%);
+            --dark-blue: #0f172a;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg: #f1f5f9;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
+        body { background: var(--bg); color: var(--dark-blue); min-height: 100vh; padding-bottom: 80px; overflow-x: hidden; }
+
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--dark-blue); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+        .splash-logo { font-size: 3.5rem; color: var(--gold); margin-bottom: 15px; animation: pulse-gold 2s infinite ease-in-out; }
+        .splash-title { color: #fff; font-weight: 700; font-size: 1.8rem; letter-spacing: 2px; }
+        @keyframes pulse-gold {
+            0% { transform: scale(1); filter: drop-shadow(0 0 0px var(--gold)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 15px var(--gold)); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 0px var(--gold)); }
+        }
+
+        header { 
+            background: var(--dark-blue); color: var(--gold); text-align: center; 
+            padding: 2rem 1rem 3rem; font-size: 1.4rem; font-weight: 700; border-bottom: 4px solid var(--gold);
+        }
+
+        .container { padding: 0 1.2rem; max-width: 500px; margin: -2rem auto 0; position: relative; z-index: 10; }
+
+        .card { 
+            background: #fff; border-radius: 20px; padding: 1.5rem; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); margin-bottom: 1.2rem;
+        }
+
+        .tabs { display: flex; gap: 10px; margin-bottom: 1.5rem; background: #e2e8f0; padding: 5px; border-radius: 12px; }
+        .tabs span { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 8px; font-weight: 600; color: #64748b; }
+        .tabs span.active { background: #fff; color: var(--dark-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        .app-section { display: none; animation: fadeIn 0.4s ease; }
+        .app-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 75px;
+            background: #fff; display: flex; justify-content: space-around; align-items: center;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 1000; border-top: 1px solid #e2e8f0;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; cursor: pointer; transition: 0.3s; width: 25%; }
+        .nav-item i { font-size: 1.3rem; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .nav-item.active { color: var(--dark-blue); }
+        .nav-item.active i { background: #f1f5f9; color: var(--gold); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .nav-item span { font-size: 0.65rem; font-weight: 700; margin-top: 2px; }
+
+        input { width: 100%; padding: 12px 15px; margin-bottom: 1rem; border-radius: 10px; border: 1.5px solid #e2e8f0; font-size: 1rem; outline: none; }
+        .password-container { position: relative; width: 100%; }
+        .password-container i { position: absolute; right: 15px; top: 14px; cursor: pointer; color: #94a3b8; }
+        .forgot-link { display: block; text-align: right; font-size: 0.8rem; color: var(--gold); margin: -5px 0 15px; cursor: pointer; font-weight: 600; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 12px; background: var(--dark-blue); color: #fff; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        #clienteCard { display: none; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 20px; padding: 1.5rem; color: #fff; margin-bottom: 1.2rem; border-left: 6px solid var(--gold); }
+        
+        #frase-gold { font-style: italic; color: var(--gold); font-weight: 600; font-size: 0.9rem; text-align: center; }
+
+        .hist-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f1f5f9; }
+        .val-pos { color: var(--success); font-weight: 700; }
+        .val-neg { color: var(--danger); font-weight: 700; }
+        .badge { padding: 3px 8px; border-radius: 6px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+<div id="splash-screen">
+    <div class="splash-logo"><i class="fa-solid fa-gem"></i></div>
+    <div class="splash-title">DAP CashBack</div>
+    <p style="color: #64748b; font-size: 0.8rem; margin-top: 10px;">Painel Business Lojista...</p>
+</div>
+
+<header>DAP CashBack PRO</header>
+
+<div class="container">
+    <div id="authArea" class="card">
+        <div class="tabs">
+            <span id="tabLogin" class="active" onclick="toggleAuthMode('login')">Entrar</span>
+            <span id="tabCad" onclick="toggleAuthMode('cadastro')">Nova Loja</span>
+        </div>
+
+        <div id="loginForm">
+            <input type="email" id="email" placeholder="E-mail da loja">
+            <div class="password-container">
+                <input type="password" id="senha" placeholder="Sua senha">
+                <i class="fa-solid fa-eye" onclick="togglePass('senha')"></i>
+            </div>
+            <span class="forgot-link" onclick="esqueciSenha()">Esqueceu a senha?</span>
+            <button onclick="login()">Acessar Painel</button>
+        </div>
+
+        <div id="cadForm" style="display:none;">
+            <input type="text" id="nomeLoja" placeholder="Nome Fantasia da Loja">
+            <input type="email" id="emailCad" placeholder="E-mail comercial">
+            <div class="password-container">
+                <input type="password" id="senhaCad" placeholder="Senha (mín. 6 dígitos)">
+                <i class="fa-solid fa-eye" onclick="togglePass('senhaCad')"></i>
+            </div>
+            <button onclick="cadastrarLoja()" style="background: var(--gold); margin-top: 15px;">Criar Conta Lojista</button>
+        </div>
+    </div>
+
+    <div id="painel" style="display:none;">
+        
+        <section id="sec-inicio" class="app-section active">
+            <div class="card" style="background: var(--gold-gradient); color: #2c1e05;">
+                <h3 id="nomeLojaPainel">BEM-VINDO!</h3>
+                <p style="font-size: 0.8rem; opacity: 0.8;">Painel de Controle de Fidelidade</p>
+            </div>
+            
+            <div class="card">
+                <p id="frase-gold">"Carregando dica de vendas..."</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="fa-solid fa-magnifying-glass"></i> Buscar Cliente</h3>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="cpfBusca" placeholder="CPF do Cliente" style="margin-bottom:0">
+                    <button onclick="buscarCliente()" style="width: 60px;"><i class="fa-solid fa-search"></i></button>
+                </div>
+            </div>
+
+            <div id="clienteCard">
+                <h2 id="nomeCli">---</h2>
+                <p id="cpfCli" style="font-size: 0.8rem; opacity: 0.7;">CPF: ---</p>
+                <div style="margin-top: 15px;">
+                    <p style="font-size: 0.7rem; opacity: 0.8;">SALDO DO CLIENTE</p>
+                    <h1 id="saldoValue">R$ 0,00</h1>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-cashback" class="app-section">
+            <div id="opsArea" style="display:none;">
+                <div class="card">
+                    <h3><i class="fa-solid fa-plus-circle" style="color: var(--success);"></i> Lançar Crédito</h3>
+                    <input type="number" id="valorVenda" placeholder="Valor da Venda (R$)" oninput="autoCalcular()">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <input type="number" id="porcentagem" value="10" placeholder="%" oninput="autoCalcular()">
+                        <input type="number" id="valorFinal" placeholder="Ganho R$" style="font-weight:700; color:var(--success)">
+                    </div>
+                    <button onclick="processarOperacao('credito')" style="background: var(--success);">Confirmar Crédito</button>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fa-solid fa-minus-circle" style="color: var(--danger);"></i> Realizar Resgate</h3>
+                    <input type="number" id="valorResgate" placeholder="Valor do Resgate (R$)">
+                    <button onclick="processarOperacao('resgate')" style="background: var(--danger);">Confirmar Resgate</button>
+                </div>
+            </div>
+
+            <div id="avisoBusca" class="card" style="text-align:center; color:#94a3b8">
+                <i class="fa-solid fa-user-slash" style="font-size:2rem; margin-bottom:10px"></i>
+                <p>Busque um cliente na aba Início para liberar operações.</p>
+            </div>
+        </section>
+
+        <section id="sec-notificacoes" class="app-section">
+            <div class="card">
+                <h3><i class="fa-solid fa-history"></i> Últimas Operações</h3>
+                <div id="listaHistorico">
+                    <p style="text-align: center; color: #94a3b8; font-size: 0.8rem;">Busque um cliente para ver o histórico.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-perfil" class="app-section">
+            <div class="card" style="text-align:center">
+                <i class="fa-solid fa-store" style="font-size:3rem; color:var(--gold); margin-bottom:15px"></i>
+                <h2 id="perfilNomeLoja">Loja</h2>
+                <p id="perfilEmailLoja">email@loja.com</p>
+                <button onclick="location.reload()" style="background:transparent; border:1.5px solid #ef4444; color:#ef4444; margin-top:20px">Sair do Sistema</button>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<nav class="bottom-nav" id="menu-inferior" style="display:none;">
+    <div class="nav-item active" onclick="showSection('inicio', this)">
+        <i class="fa-solid fa-house"></i><span>Início</span>
+    </div>
+    <div class="nav-item" onclick="showSection('cashback', this)">
+        <i class="fa-solid fa-hand-holding-dollar"></i><span>Operar</span>
+    </div>
+    <div class="nav-item" onclick="showSection('notificacoes', this)">
+        <i class="fa-solid fa-list-check"></i><span>Extrato</span>
+    </div>
+    <div class="nav-item" onclick="showSection('perfil', this)">
+        <i class="fa-solid fa-gears"></i><span>Painel</span>
+    </div>
+</nav>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBx_oRNcAewlkJMhdVoxM4dZ7yAbc1gIoY",
+        authDomain: "dap-cashback.firebaseapp.com",
+        projectId: "dap-cashback",
+        storageBucket: "dap-cashback.firebasestorage.app",
+        messagingSenderId: "659444754131",
+        appId: "1:659444754131:web:2cf135b22e80e1103dd626"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const splash = document.getElementById('splash-screen');
+            splash.style.opacity = '0';
+            setTimeout(() => splash.style.visibility = 'hidden', 800);
+        }, 2500);
+    });
+
+    const frasesLojista = [
+        "Fidelizar um cliente é mais barato que conquistar um novo!",
+        "Dê cashback hoje e garanta o retorno do cliente amanhã.",
+        "Um cliente satisfeito é o melhor marketing da sua loja.",
+        "O DAP CashBack ajuda seu faturamento a crescer.",
+        "Ofereça vantagens exclusivas e destaque-se da concorrência.",
+        "Quanto mais cashback você lança, mais sua base de clientes cresce.",
+        "Use o resgate para criar uma experiência de compra incrível.",
+        "Lembre o cliente de conferir o saldo no app dele!",
+        "Pequenos mimos geram grandes conexões com o público.",
+        "A recorrência é a alma do negócio. Use o CashBack!",
+        "DAP CashBack: Transformando vendas em relacionamentos.",
+        "Sua loja merece os melhores clientes. Cuide deles!",
+        "Sorria, você está gerando valor!",
+        "O sucesso da sua loja começa no atendimento VIP.",
+        "Cada ponto lançado é um motivo para o cliente voltar.",
+        "Monitore o histórico para entender o hábito do seu cliente.",
+        "Trate seu cliente como Gold e ele nunca te deixará.",
+        "Incentive o uso do app para facilitar os lançamentos.",
+        "O poder da gratidão em forma de dinheiro de volta.",
+        "Bora bater a meta de fidelização hoje?"
+    ];
+
+    function atualizarFrase() {
+        const index = Math.floor(Math.random() * frasesLojista.length);
+        document.getElementById('frase-gold').innerText = `"${frasesLojista[index]}"`;
+    }
+
+    function showSection(id, element) {
+        document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('sec-' + id).classList.add('active');
+        element.classList.add('active');
+        if(id === 'inicio') atualizarFrase();
+    }
+
+    function toggleAuthMode(mode) {
+        document.getElementById('loginForm').style.display = mode === 'login' ? 'block' : 'none';
+        document.getElementById('cadForm').style.display = mode === 'cadastro' ? 'block' : 'none';
+        document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
+        document.getElementById('tabCad').classList.toggle('active', mode === 'cadastro');
+    }
+
+    function togglePass(id) {
+        const input = document.getElementById(id);
+        const icon = input.nextElementSibling;
+        input.type = input.type === 'password' ? 'text' : 'password';
+        icon.classList.toggle('fa-eye-slash');
+    }
+
+    function esqueciSenha() {
+        const e = document.getElementById('email').value;
+        if(!e) return alert("Digite o e-mail da loja primeiro.");
+        auth.sendPasswordResetEmail(e).then(() => alert("E-mail de recuperação enviado!")).catch(err => alert(err.message));
+    }
+
+    async function cadastrarLoja() {
+        const n = document.getElementById('nomeLoja').value;
+        const e = document.getElementById('emailCad').value;
+        const s = document.getElementById('senhaCad').value;
+        if(!n || !e || s.length < 6) return alert("Preencha todos os campos corretamente.");
+        try {
+            const res = await auth.createUserWithEmailAndPassword(e, s);
+            await db.collection('lojistas').doc(res.user.uid).set({ nome: n, email: e, data: new Date() });
+            alert("Conta de Lojista criada!"); location.reload();
+        } catch(err) { alert(err.message); }
+    }
+
+    function login() {
+        const e = document.getElementById('email').value;
+        const s = document.getElementById('senha').value;
+        auth.signInWithEmailAndPassword(e, s).then(res => {
+            document.getElementById('authArea').style.display = 'none';
+            document.getElementById('painel').style.display = 'block';
+            document.getElementById('menu-inferior').style.display = 'flex';
+            atualizarFrase();
+            
+            db.collection('lojistas').doc(res.user.uid).get().then(doc => {
+                if(doc.exists){
+                    const d = doc.data();
+                    document.getElementById('nomeLojaPainel').innerText = d.nome.toUpperCase();
+                    document.getElementById('perfilNomeLoja').innerText = d.nome;
+                    document.getElementById('perfilEmailLoja').innerText = d.email;
+                }
+            });
+        }).catch(err => alert("Erro no login: " + err.message));
+    }
+
+    let clienteRef = null;
+    let saldoAtual = 0;
+
+    async function buscarCliente() {
+        const cpf = document.getElementById('cpfBusca').value.trim();
+        if(!cpf) return;
+        const snap = await db.collection('usuarios').where('cpf', '==', cpf).get();
+        if(snap.empty) return alert("Cliente não encontrado.");
+        
+        clienteRef = snap.docs[0].ref;
+        clienteRef.onSnapshot(doc => {
+            const d = doc.data();
+            saldoAtual = d.saldo || 0;
+            document.getElementById('clienteCard').style.display = 'block';
+            document.getElementById('opsArea').style.display = 'block';
+            document.getElementById('avisoBusca').style.display = 'none';
+            document.getElementById('nomeCli').innerText = d.nome.toUpperCase();
+            document.getElementById('cpfCli').innerText = "CPF: " + d.cpf;
+            document.getElementById('saldoValue').innerText = `R$ ${saldoAtual.toFixed(2)}`;
+            carregarHistorico(d.cpf);
+        });
+    }
+
+    function autoCalcular() {
+        const v = parseFloat(document.getElementById('valorVenda').value) || 0;
+        const p = parseFloat(document.getElementById('porcentagem').value) || 0;
+        document.getElementById('valorFinal').value = (v * (p/100)).toFixed(2);
+    }
+
+    async function processarOperacao(tipo) {
+        // SEGURANÇA: Verifica se há um lojista logado antes de operar
+        if (!auth.currentUser) {
+            alert("Sessão expirada. Faça login novamente.");
+            location.reload();
+            return;
+        }
+
+        const vInput = tipo === 'credito' ? document.getElementById('valorFinal').value : document.getElementById('valorResgate').value;
+        const v = parseFloat(vInput);
+
+        if(!v || v <= 0) return alert("Valor inválido.");
+        if(tipo === 'resgate' && v > saldoAtual) return alert("Saldo insuficiente.");
+
+        if(!confirm(`Confirmar ${tipo}?`)) return;
+
+        try {
+            const batch = db.batch();
+            batch.update(clienteRef, { saldo: firebase.firestore.FieldValue.increment(tipo === 'credito' ? v : -v) });
+            const tRef = db.collection('transacoes').doc();
+            
+            // SEGURANÇA: Registra o UID do lojista real que fez a operação
+            batch.set(tRef, { 
+                clienteCpf: document.getElementById('cpfBusca').value, 
+                lojistaEmail: auth.currentUser.email,
+                lojistaUid: auth.currentUser.uid,
+                valor: v, 
+                tipo: tipo, 
+                servico: tipo === 'credito' ? "Crédito Cashback" : "Resgate de Pontos",
+                data: firebase.firestore.FieldValue.serverTimestamp() 
+            });
+
+            await batch.commit();
+            alert("Operação realizada com sucesso!");
+            document.getElementById('valorVenda').value = '';
+            document.getElementById('valorResgate').value = '';
+
+        } catch(e) { 
+            console.error(e);
+            alert("Erro de segurança: Você não tem permissão para esta operação ou o banco de dados está bloqueado."); 
+        }
+    }
+
+    async function carregarHistorico(cpf) {
+        const lista = document.getElementById('listaHistorico');
+        const snap = await db.collection('transacoes').where('clienteCpf', '==', cpf).get();
+        lista.innerHTML = '';
+        if(snap.empty) { lista.innerHTML = '<p style="text-align:center; font-size:0.8rem">Sem histórico recente.</p>'; return; }
+
+        const docs = [];
+        snap.forEach(d => docs.push(d.data()));
+        docs.sort((a, b) => (b.data?.seconds || 0) - (a.data?.seconds || 0));
+
+        docs.forEach(t => {
+            const isC = t.tipo === 'credito';
+            const dt = t.data ? new Date(t.data.seconds * 1000).toLocaleString('pt-BR') : 'Agora';
+            lista.innerHTML += `
+                <div class="hist-item">
+                    <div>
+                        <span class="badge" style="background:${isC?'#dcfce7':'#fee2e2'}; color:${isC?'#166534':'#991b1b'}">${t.tipo}</span>
+                        <b style="font-size:0.8rem">${t.servico}</b><br>
+                        <small style="font-size:0.6rem; color:#94a3b8">${dt}</small>
+                    </div>
+                    <span class="${isC?'val-pos':'val-neg'}">${isC?'+':'-'} R$ ${t.valor.toFixed(2)}</span>
+                </div>`;
+        });
+    }
+</script>
+</body>
+</html>
