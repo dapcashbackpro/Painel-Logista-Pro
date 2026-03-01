@@ -313,13 +313,40 @@
         window.open(`https://mpago.la/1P16576?external_reference=${userLogado}`, '_blank');
     }
 
+    // FUNÇÃO DE CADASTRO CORRIGIDA
+    async function cadastrarLoja() {
+        const nome = document.getElementById('nomeLoja').value.trim();
+        const email = document.getElementById('emailCad').value.trim();
+        const senha = document.getElementById('senhaCad').value;
+
+        if(!nome || !email || !senha) return alert("Preencha todos os campos.");
+        if(senha.length < 6) return alert("A senha deve ter no mínimo 6 dígitos.");
+
+        try {
+            const res = await auth.createUserWithEmailAndPassword(email, senha);
+            const uid = res.user.uid;
+            
+            // Registra a loja no Firestore para habilitar o painel e o chat
+            await db.collection('lojistas').doc(uid).set({
+                nome: nome,
+                email: email,
+                taxaAcumulada: 0,
+                dataCadastro: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            alert("Loja cadastrada com sucesso!");
+            location.reload(); // Recarrega para o lojista fazer o primeiro login
+        } catch (error) {
+            alert("Erro ao cadastrar: " + error.message);
+        }
+    }
+
     function login() {
         const e = document.getElementById('email').value;
         const s = document.getElementById('senha').value;
         auth.signInWithEmailAndPassword(e, s).then(res => {
             userLogado = res.user.uid;
             
-            // BUSCA O NOME DA LOJA ANTES DE LIBERAR O PAINEL
             db.collection('lojistas').doc(userLogado).get().then(doc => {
                 if(doc.exists) {
                     nomeUsuarioLogado = doc.data().nome;
@@ -335,7 +362,6 @@
         }).catch(err => alert("Erro: " + err.message));
     }
 
-    // --- NOVO CHAT GLOBAL ---
     function abrirChat() {
         document.getElementById('modal-chat').style.display = 'flex';
         escutarMensagensGlobais();
@@ -379,20 +405,19 @@
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        campo.value = ''; // Limpa para agilidade visual
+        campo.value = ''; 
         
         try {
             await db.collection('mural_global').add(msgData);
         } catch (e) {
             console.error("Erro ao enviar:", e);
-            alert("Erro ao enviar. Verifique as Regras de Segurança no Firebase.");
+            alert("Erro ao enviar.");
         }
     }
 
     function fecharChat() {
         document.getElementById('modal-chat').style.display = 'none';
     }
-    // --- FIM CHAT ---
 
     async function buscarCliente() {
         const cpf = document.getElementById('cpfBusca').value.trim();
