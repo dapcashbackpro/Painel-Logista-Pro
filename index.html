@@ -147,10 +147,10 @@
     </div>
     
     <div class="msg-container" id="mensagens-corpo">
-        </div>
+    </div>
 
     <div class="chat-footer">
-        <input type="text" id="campo-texto-msg" class="chat-input" placeholder="Escreva para todos...">
+        <input type="text" id="campo-texto-msg" class="chat-input" placeholder="Escreva para todos..." onkeypress="if(event.key === 'Enter') enviarMensagem()">
         <button onclick="enviarMensagem()" class="chat-send-btn">
             <i class="fa-solid fa-paper-plane"></i>
         </button>
@@ -293,7 +293,8 @@
 
     function atualizarFrase() {
         const index = Math.floor(Math.random() * frasesLojista.length);
-        document.getElementById('frase-gold').innerText = `"${frasesLojista[index]}"`;
+        const campoFrase = document.getElementById('frase-gold');
+        if(campoFrase) campoFrase.innerText = `"${frasesLojista[index]}"`;
     }
 
     function monitorarBloqueio(uid) {
@@ -317,15 +318,19 @@
         const s = document.getElementById('senha').value;
         auth.signInWithEmailAndPassword(e, s).then(res => {
             userLogado = res.user.uid;
-            document.getElementById('authArea').style.display = 'none';
-            document.getElementById('painel').style.display = 'block';
-            document.getElementById('menu-inferior').style.display = 'flex';
-            atualizarFrase();
-            monitorarBloqueio(userLogado);
+            
+            // BUSCA O NOME DA LOJA ANTES DE LIBERAR O PAINEL
             db.collection('lojistas').doc(userLogado).get().then(doc => {
-                const nome = doc.data().nome;
-                document.getElementById('nomeLojaPainel').innerText = nome.toUpperCase();
-                document.getElementById('perfilNomeLoja').innerText = nome;
+                if(doc.exists) {
+                    nomeUsuarioLogado = doc.data().nome;
+                    document.getElementById('nomeLojaPainel').innerText = nomeUsuarioLogado.toUpperCase();
+                    document.getElementById('perfilNomeLoja').innerText = nomeUsuarioLogado;
+                }
+                document.getElementById('authArea').style.display = 'none';
+                document.getElementById('painel').style.display = 'block';
+                document.getElementById('menu-inferior').style.display = 'flex';
+                atualizarFrase();
+                monitorarBloqueio(userLogado);
             });
         }).catch(err => alert("Erro: " + err.message));
     }
@@ -337,20 +342,23 @@
     }
 
     function escutarMensagensGlobais() {
-        // Pega as últimas 50 mensagens do Mural Global
         db.collection('mural_global').orderBy('timestamp', 'asc').limitToLast(50).onSnapshot(snap => {
             const corpo = document.getElementById('mensagens-corpo');
             corpo.innerHTML = '';
             snap.forEach(doc => {
                 const m = doc.data();
-                const souEu = m.autorId === userLogado;
-                corpo.innerHTML += `
-                    <div class="balao ${souEu ? 'balao-me' : 'balao-outro'}">
-                        <span class="msg-autor">${m.autorNome}</span>
-                        ${m.texto}
-                    </div>`;
+                if(m.texto){
+                    const souEu = m.autorId === userLogado;
+                    corpo.innerHTML += `
+                        <div class="balao ${souEu ? 'balao-me' : 'balao-outro'}">
+                            <span class="msg-autor">${m.autorNome || 'Usuário'}</span>
+                            ${m.texto}
+                        </div>`;
+                }
             });
             corpo.scrollTop = corpo.scrollHeight;
+        }, err => {
+            console.error("Erro no chat:", err);
         });
     }
 
@@ -358,14 +366,27 @@
         const campo = document.getElementById('campo-texto-msg');
         const txt = campo.value.trim();
         if(!txt) return;
-        campo.value = '';
         
-        await db.collection('mural_global').add({
+        if(!userLogado) {
+            alert("Sessão expirada. Faça login novamente.");
+            return;
+        }
+
+        const msgData = {
             texto: txt,
-            autorNome: nomeUsuarioLogado,
+            autorNome: nomeUsuarioLogado || "Lojista",
             autorId: userLogado,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        };
+
+        campo.value = ''; // Limpa para agilidade visual
+        
+        try {
+            await db.collection('mural_global').add(msgData);
+        } catch (e) {
+            console.error("Erro ao enviar:", e);
+            alert("Erro ao enviar. Verifique as Regras de Segurança no Firebase.");
+        }
     }
 
     function fecharChat() {
