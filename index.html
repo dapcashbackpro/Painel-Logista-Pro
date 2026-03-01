@@ -20,6 +20,13 @@
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
         body { background: var(--bg); color: var(--dark-blue); min-height: 100vh; padding-bottom: 80px; overflow-x: hidden; }
 
+        /* TELA DE BLOQUEIO (MERCADO PAGO) */
+        #bloqueio-pagamento {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.98); display: none; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 10000; text-align: center; padding: 20px;
+        }
+
         #splash-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--dark-blue); display: flex; flex-direction: column;
@@ -28,6 +35,7 @@
         }
         .splash-logo { font-size: 3.5rem; color: var(--gold); margin-bottom: 15px; animation: pulse-gold 2s infinite ease-in-out; }
         .splash-title { color: #fff; font-weight: 700; font-size: 1.8rem; letter-spacing: 2px; }
+        
         @keyframes pulse-gold {
             0% { transform: scale(1); filter: drop-shadow(0 0 0px var(--gold)); }
             50% { transform: scale(1.1); filter: drop-shadow(0 0 15px var(--gold)); }
@@ -79,9 +87,31 @@
         .val-pos { color: var(--success); font-weight: 700; }
         .val-neg { color: var(--danger); font-weight: 700; }
         .badge { padding: 3px 8px; border-radius: 6px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
+
+        /* ESTILO DO BOTÃO PULSANTE AMARELO */
+        @keyframes pulsar-amarelo {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 219, 0, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(255, 219, 0, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 219, 0, 0); }
+        }
+        .btn-pagar-mp {
+            background: #FFDB00; color: #000; padding: 20px 40px; border-radius: 15px;
+            font-weight: 800; font-size: 1.2rem; cursor: pointer; border: none;
+            display: flex; align-items: center; gap: 12px; animation: pulsar-amarelo 1.5s infinite;
+        }
     </style>
 </head>
 <body>
+
+<div id="bloqueio-pagamento">
+    <div style="color: var(--gold); font-size: 4rem; margin-bottom: 20px;"><i class="fa-solid fa-lock"></i></div>
+    <h2 style="color: #fff; margin-bottom: 10px;">Acesso Suspenso</h2>
+    <p style="color: #94a3b8; margin-bottom: 30px;">Limite de R$ 30,00 em taxas atingido.<br>Regularize para continuar operando.</p>
+    <div class="btn-pagar-mp" onclick="pagarTaxa()">
+        <img src="https://http2.mlstatic.com/frontend-assets/sdk/mp-logo.svg" width="35">
+        PAGAR AGORA
+    </div>
+</div>
 
 <div id="splash-screen">
     <div class="splash-logo"><i class="fa-solid fa-gem"></i></div>
@@ -125,6 +155,7 @@
             <div class="card" style="background: var(--gold-gradient); color: #2c1e05;">
                 <h3 id="nomeLojaPainel">BEM-VINDO!</h3>
                 <p style="font-size: 0.8rem; opacity: 0.8;">Painel de Controle de Fidelidade</p>
+                <p id="info-taxa" style="font-size: 0.7rem; margin-top: 10px; font-weight: bold; color: #2c1e05;"></p>
             </div>
             
             <div class="card">
@@ -228,6 +259,46 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    // --- LOGICA DE BLOQUEIO REAL-TIME ---
+    function monitorarBloqueio(uid) {
+        db.collection('lojistas').doc(uid).onSnapshot(doc => {
+            if (doc.exists) {
+                const dados = doc.data();
+                const taxa = dados.taxaAcumulada || 0;
+                const telaBloqueio = document.getElementById('bloqueio-pagamento');
+                const infoTaxa = document.getElementById('info-taxa');
+
+                if (infoTaxa) infoTaxa.innerText = "TAXA ACUMULADA: R$ " + taxa.toFixed(2);
+
+                if (taxa >= 30) {
+                    telaBloqueio.style.display = 'flex';
+                    verificarAutoDesbloqueio(uid); // Verifica se voltou do pagamento
+                } else {
+                    telaBloqueio.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    // --- AUTO-DESBLOQUEIO PELA URL (PLANO GRATUITO) ---
+    function verificarAutoDesbloqueio(uid) {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('pago') === 'true') {
+            db.collection('lojistas').doc(uid).update({ taxaAcumulada: 0 }).then(() => {
+                alert("Pagamento identificado! Sistema liberado.");
+                // Limpa o parâmetro da URL sem recarregar
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }).catch(e => console.error("Erro ao desbloquear:", e));
+        }
+    }
+
+    function pagarTaxa() {
+        const uid = auth.currentUser.uid;
+        // SEU LINK OFICIAL INTEGRADO
+        window.open(`https://mpago.la/1P16576?external_reference=${uid}`, '_blank');
+    }
+
+    // --- RESTANTE DO CÓDIGO ORIGINAL ---
     window.addEventListener('load', () => {
         setTimeout(() => {
             const splash = document.getElementById('splash-screen');
@@ -240,23 +311,7 @@
         "Fidelizar um cliente é mais barato que conquistar um novo!",
         "Dê cashback hoje e garanta o retorno do cliente amanhã.",
         "Um cliente satisfeito é o melhor marketing da sua loja.",
-        "O DAP CashBack ajuda seu faturamento a crescer.",
-        "Ofereça vantagens exclusivas e destaque-se da concorrência.",
-        "Quanto mais cashback você lança, mais sua base de clientes cresce.",
-        "Use o resgate para criar uma experiência de compra incrível.",
-        "Lembre o cliente de conferir o saldo no app dele!",
-        "Pequenos mimos geram grandes conexões com o público.",
-        "A recorrência é a alma do negócio. Use o CashBack!",
-        "DAP CashBack: Transformando vendas em relacionamentos.",
-        "Sua loja merece os melhores clientes. Cuide deles!",
-        "Sorria, você está gerando valor!",
-        "O sucesso da sua loja começa no atendimento VIP.",
-        "Cada ponto lançado é um motivo para o cliente voltar.",
-        "Monitore o histórico para entender o hábito do seu cliente.",
-        "Trate seu cliente como Gold e ele nunca te deixará.",
-        "Incentive o uso do app para facilitar os lançamentos.",
-        "O poder da gratidão em forma de dinheiro de volta.",
-        "Bora bater a meta de fidelização hoje?"
+        "DAP CashBack: Transformando vendas em relacionamentos."
     ];
 
     function atualizarFrase() {
@@ -283,7 +338,7 @@
         const input = document.getElementById(id);
         const icon = input.nextElementSibling;
         input.type = input.type === 'password' ? 'text' : 'password';
-        icon.classList.toggle('fa-eye-slash');
+        if(icon) icon.classList.toggle('fa-eye-slash');
     }
 
     function esqueciSenha() {
@@ -299,7 +354,12 @@
         if(!n || !e || s.length < 6) return alert("Preencha todos os campos corretamente.");
         try {
             const res = await auth.createUserWithEmailAndPassword(e, s);
-            await db.collection('lojistas').doc(res.user.uid).set({ nome: n, email: e, data: new Date() });
+            await db.collection('lojistas').doc(res.user.uid).set({ 
+                nome: n, 
+                email: e, 
+                data: new Date(),
+                taxaAcumulada: 0 
+            });
             alert("Conta de Lojista criada!"); location.reload();
         } catch(err) { alert(err.message); }
     }
@@ -312,6 +372,7 @@
             document.getElementById('painel').style.display = 'block';
             document.getElementById('menu-inferior').style.display = 'flex';
             atualizarFrase();
+            monitorarBloqueio(res.user.uid);
             
             db.collection('lojistas').doc(res.user.uid).get().then(doc => {
                 if(doc.exists){
@@ -335,6 +396,7 @@
         
         clienteRef = snap.docs[0].ref;
         clienteRef.onSnapshot(doc => {
+            if(!doc.exists) return;
             const d = doc.data();
             saldoAtual = d.saldo || 0;
             document.getElementById('clienteCard').style.display = 'block';
@@ -354,13 +416,7 @@
     }
 
     async function processarOperacao(tipo) {
-        // SEGURANÇA: Verifica se há um lojista logado antes de operar
-        if (!auth.currentUser) {
-            alert("Sessão expirada. Faça login novamente.");
-            location.reload();
-            return;
-        }
-
+        if (!auth.currentUser) return;
         const vInput = tipo === 'credito' ? document.getElementById('valorFinal').value : document.getElementById('valorResgate').value;
         const v = parseFloat(vInput);
 
@@ -371,13 +427,18 @@
 
         try {
             const batch = db.batch();
+            const lojistaRef = db.collection('lojistas').doc(auth.currentUser.uid);
+
             batch.update(clienteRef, { saldo: firebase.firestore.FieldValue.increment(tipo === 'credito' ? v : -v) });
-            const tRef = db.collection('transacoes').doc();
             
-            // SEGURANÇA: Registra o UID do lojista real que fez a operação
+            if (tipo === 'resgate') {
+                const taxa = v * 0.10;
+                batch.update(lojistaRef, { taxaAcumulada: firebase.firestore.FieldValue.increment(taxa) });
+            }
+
+            const tRef = db.collection('transacoes').doc();
             batch.set(tRef, { 
                 clienteCpf: document.getElementById('cpfBusca').value, 
-                lojistaEmail: auth.currentUser.email,
                 lojistaUid: auth.currentUser.uid,
                 valor: v, 
                 tipo: tipo, 
@@ -387,13 +448,7 @@
 
             await batch.commit();
             alert("Operação realizada com sucesso!");
-            document.getElementById('valorVenda').value = '';
-            document.getElementById('valorResgate').value = '';
-
-        } catch(e) { 
-            console.error(e);
-            alert("Erro de segurança: Você não tem permissão para esta operação ou o banco de dados está bloqueado."); 
-        }
+        } catch(e) { alert("Erro no banco de dados."); }
     }
 
     async function carregarHistorico(cpf) {
@@ -401,11 +456,9 @@
         const snap = await db.collection('transacoes').where('clienteCpf', '==', cpf).get();
         lista.innerHTML = '';
         if(snap.empty) { lista.innerHTML = '<p style="text-align:center; font-size:0.8rem">Sem histórico recente.</p>'; return; }
-
         const docs = [];
         snap.forEach(d => docs.push(d.data()));
         docs.sort((a, b) => (b.data?.seconds || 0) - (a.data?.seconds || 0));
-
         docs.forEach(t => {
             const isC = t.tipo === 'credito';
             const dt = t.data ? new Date(t.data.seconds * 1000).toLocaleString('pt-BR') : 'Agora';
