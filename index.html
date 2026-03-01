@@ -20,7 +20,7 @@
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
         body { background: var(--bg); color: var(--dark-blue); min-height: 100vh; padding-bottom: 80px; overflow-x: hidden; }
 
-        /* TELA DE BLOQUEIO (MERCADO PAGO) */
+        /* TELA DE BLOQUEIO */
         #bloqueio-pagamento {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.98); display: none; flex-direction: column;
@@ -76,7 +76,6 @@
         input { width: 100%; padding: 12px 15px; margin-bottom: 1rem; border-radius: 10px; border: 1.5px solid #e2e8f0; font-size: 1rem; outline: none; }
         .password-container { position: relative; width: 100%; }
         .password-container i { position: absolute; right: 15px; top: 14px; cursor: pointer; color: #94a3b8; }
-        .forgot-link { display: block; text-align: right; font-size: 0.8rem; color: var(--gold); margin: -5px 0 15px; cursor: pointer; font-weight: 600; }
         button { width: 100%; padding: 14px; border: none; border-radius: 12px; background: var(--dark-blue); color: #fff; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
         #clienteCard { display: none; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 20px; padding: 1.5rem; color: #fff; margin-bottom: 1.2rem; border-left: 6px solid var(--gold); }
@@ -88,7 +87,6 @@
         .val-neg { color: var(--danger); font-weight: 700; }
         .badge { padding: 3px 8px; border-radius: 6px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
 
-        /* ESTILO DO BOTÃO PULSANTE AMARELO SEM IMAGEM */
         @keyframes pulsar-amarelo {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 219, 0, 0.7); }
             70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(255, 219, 0, 0); }
@@ -136,33 +134,25 @@
                 <input type="password" id="senha" placeholder="Sua senha">
                 <i class="fa-solid fa-eye" onclick="togglePass('senha')"></i>
             </div>
-            <span class="forgot-link" onclick="esqueciSenha()">Esqueceu a senha?</span>
             <button onclick="login()">Acessar Painel</button>
         </div>
 
         <div id="cadForm" style="display:none;">
             <input type="text" id="nomeLoja" placeholder="Nome Fantasia da Loja">
             <input type="email" id="emailCad" placeholder="E-mail comercial">
-            <div class="password-container">
-                <input type="password" id="senhaCad" placeholder="Senha (mín. 6 dígitos)">
-                <i class="fa-solid fa-eye" onclick="togglePass('senhaCad')"></i>
-            </div>
+            <input type="password" id="senhaCad" placeholder="Senha (mín. 6 dígitos)">
             <button onclick="cadastrarLoja()" style="background: var(--gold); margin-top: 15px;">Criar Conta Lojista</button>
         </div>
     </div>
 
     <div id="painel" style="display:none;">
-        
         <section id="sec-inicio" class="app-section active">
             <div class="card" style="background: var(--gold-gradient); color: #2c1e05;">
                 <h3 id="nomeLojaPainel">BEM-VINDO!</h3>
-                <p style="font-size: 0.8rem; opacity: 0.8;">Painel de Controle de Fidelidade</p>
-                <p id="info-taxa" style="font-size: 0.7rem; margin-top: 10px; font-weight: bold; color: #2c1e05;"></p>
+                <p id="info-taxa" style="font-size: 0.7rem; margin-top: 10px; font-weight: bold;"></p>
             </div>
             
-            <div class="card">
-                <p id="frase-gold">"Carregando dica de vendas..."</p>
-            </div>
+            <div class="card"><p id="frase-gold">"Carregando dica..."</p></div>
 
             <div class="card">
                 <h3><i class="fa-solid fa-magnifying-glass"></i> Buscar Cliente</h3>
@@ -174,73 +164,47 @@
 
             <div id="clienteCard">
                 <h2 id="nomeCli">---</h2>
-                <p id="cpfCli" style="font-size: 0.8rem; opacity: 0.7;">CPF: ---</p>
-                <div style="margin-top: 15px;">
-                    <p style="font-size: 0.7rem; opacity: 0.8;">SALDO DO CLIENTE</p>
-                    <h1 id="saldoValue">R$ 0,00</h1>
-                </div>
+                <h1 id="saldoValue">R$ 0,00</h1>
             </div>
         </section>
 
         <section id="sec-cashback" class="app-section">
             <div id="opsArea" style="display:none;">
                 <div class="card">
-                    <h3><i class="fa-solid fa-plus-circle" style="color: var(--success);"></i> Lançar Crédito</h3>
-                    <input type="number" id="valorVenda" placeholder="Valor da Venda (R$)" oninput="autoCalcular()">
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                        <input type="number" id="porcentagem" value="10" placeholder="%" oninput="autoCalcular()">
-                        <input type="number" id="valorFinal" placeholder="Ganho R$" style="font-weight:700; color:var(--success)">
-                    </div>
-                    <button onclick="processarOperacao('credito')" style="background: var(--success);">Confirmar Crédito</button>
+                    <h3>Lançar Crédito</h3>
+                    <input type="number" id="valorVenda" placeholder="Venda (R$)" oninput="autoCalcular()">
+                    <input type="number" id="valorFinal" placeholder="Cashback R$" style="font-weight:700; color:var(--success)">
+                    <button onclick="processarOperacao('credito')" style="background: var(--success);">Confirmar</button>
                 </div>
-
                 <div class="card">
-                    <h3><i class="fa-solid fa-minus-circle" style="color: var(--danger);"></i> Realizar Resgate</h3>
-                    <input type="number" id="valorResgate" placeholder="Valor do Resgate (R$)">
-                    <button onclick="processarOperacao('resgate')" style="background: var(--danger);">Confirmar Resgate</button>
+                    <h3>Resgate</h3>
+                    <input type="number" id="valorResgate" placeholder="Valor (R$)">
+                    <button onclick="processarOperacao('resgate')" style="background: var(--danger);">Confirmar</button>
                 </div>
             </div>
-
-            <div id="avisoBusca" class="card" style="text-align:center; color:#94a3b8">
-                <i class="fa-solid fa-user-slash" style="font-size:2rem; margin-bottom:10px"></i>
-                <p>Busque um cliente na aba Início para liberar operações.</p>
-            </div>
+            <div id="avisoBusca" class="card" style="text-align:center; color:#94a3b8"><p>Busque um cliente primeiro.</p></div>
         </section>
 
         <section id="sec-notificacoes" class="app-section">
             <div class="card">
-                <h3><i class="fa-solid fa-history"></i> Últimas Operações</h3>
+                <h3>Histórico do Cliente</h3>
                 <div id="listaHistorico">
-                    <p style="text-align: center; color: #94a3b8; font-size: 0.8rem;">Busque um cliente para ver o histórico.</p>
+                    <p style="text-align: center; color: #94a3b8; font-size: 0.8rem;">Busque um cliente para ver o extrato.</p>
                 </div>
             </div>
         </section>
-
+        
         <section id="sec-perfil" class="app-section">
-            <div class="card" style="text-align:center">
-                <i class="fa-solid fa-store" style="font-size:3rem; color:var(--gold); margin-bottom:15px"></i>
-                <h2 id="perfilNomeLoja">Loja</h2>
-                <p id="perfilEmailLoja">email@loja.com</p>
-                <button onclick="location.reload()" style="background:transparent; border:1.5px solid #ef4444; color:#ef4444; margin-top:20px">Sair do Sistema</button>
-            </div>
+            <div class="card" style="text-align:center"><h2 id="perfilNomeLoja"></h2><button onclick="location.reload()" style="background:#ef4444; margin-top:20px">Sair</button></div>
         </section>
-
     </div>
 </div>
 
 <nav class="bottom-nav" id="menu-inferior" style="display:none;">
-    <div class="nav-item active" onclick="showSection('inicio', this)">
-        <i class="fa-solid fa-house"></i><span>Início</span>
-    </div>
-    <div class="nav-item" onclick="showSection('cashback', this)">
-        <i class="fa-solid fa-hand-holding-dollar"></i><span>Operar</span>
-    </div>
-    <div class="nav-item" onclick="showSection('notificacoes', this)">
-        <i class="fa-solid fa-list-check"></i><span>Extrato</span>
-    </div>
-    <div class="nav-item" onclick="showSection('perfil', this)">
-        <i class="fa-solid fa-gears"></i><span>Painel</span>
-    </div>
+    <div class="nav-item active" onclick="showSection('inicio', this)"><i class="fa-solid fa-house"></i><span>Início</span></div>
+    <div class="nav-item" onclick="showSection('cashback', this)"><i class="fa-solid fa-hand-holding-dollar"></i><span>Operar</span></div>
+    <div class="nav-item" onclick="showSection('notificacoes', this)"><i class="fa-solid fa-list-check"></i><span>Extrato</span></div>
+    <div class="nav-item" onclick="showSection('perfil', this)"><i class="fa-solid fa-gears"></i><span>Painel</span></div>
 </nav>
 
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
@@ -261,23 +225,41 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // --- LOGICA DE BLOQUEIO REAL-TIME ---
+    const frasesLojista = [
+        "Fidelizar um cliente é 5x mais barato que atrair um novo!",
+        "O cashback é o melhor convite para o cliente voltar.",
+        "Trate cada cliente como se fosse o único.",
+        "Vendas geram receita, fidelidade gera fortuna.",
+        "Um cliente satisfeito é o melhor marketing da sua loja.",
+        "DAP CashBack: Transformando compras em relacionamentos.",
+        "Quem dá valor ao cliente, recebe lealdade de volta.",
+        "O sucesso da sua loja depende do retorno dos seus clientes.",
+        "Transforme transações em experiências memoráveis.",
+        "A melhor propaganda é feita por clientes satisfeitos.",
+        "Cashback não é desconto, é investimento no retorno.",
+        "Mantenha seus clientes por perto e sua loja crescerá.",
+        "Pequenos gestos criam grandes conexões.",
+        "O foco deve ser sempre no sucesso do seu cliente.",
+        "Surpreenda seu cliente com benefícios exclusivos.",
+        "A confiança é a base de toda venda recorrente.",
+        "Clientes fiéis são os maiores defensores da sua marca.",
+        "Inove na forma de recompensar quem escolhe sua loja.",
+        "Fidelidade é um hábito, cultive-o todos os dias.",
+        "Cada ponto de cashback é um 'até logo' para o seu cliente."
+    ];
+
+    function atualizarFrase() {
+        const index = Math.floor(Math.random() * frasesLojista.length);
+        document.getElementById('frase-gold').innerText = `"${frasesLojista[index]}"`;
+    }
+
     function monitorarBloqueio(uid) {
+        verificarAutoDesbloqueio(uid);
         db.collection('lojistas').doc(uid).onSnapshot(doc => {
             if (doc.exists) {
-                const dados = doc.data();
-                const taxa = dados.taxaAcumulada || 0;
-                const telaBloqueio = document.getElementById('bloqueio-pagamento');
-                const infoTaxa = document.getElementById('info-taxa');
-
-                if (infoTaxa) infoTaxa.innerText = "TAXA ACUMULADA: R$ " + taxa.toFixed(2);
-
-                if (taxa >= 30) {
-                    telaBloqueio.style.display = 'flex';
-                    verificarAutoDesbloqueio(uid); 
-                } else {
-                    telaBloqueio.style.display = 'none';
-                }
+                const taxa = doc.data().taxaAcumulada || 0;
+                document.getElementById('bloqueio-pagamento').style.display = taxa >= 30 ? 'flex' : 'none';
+                document.getElementById('info-taxa').innerText = "TAXA ACUMULADA: R$ " + taxa.toFixed(2);
             }
         });
     }
@@ -288,79 +270,18 @@
             db.collection('lojistas').doc(uid).update({ taxaAcumulada: 0 }).then(() => {
                 alert("Pagamento identificado! Sistema liberado.");
                 window.history.replaceState({}, document.title, window.location.pathname);
-            }).catch(e => console.error("Erro ao desbloquear:", e));
+            });
         }
     }
 
     function pagarTaxa() {
         const uid = auth.currentUser.uid;
         window.open(`https://mpago.la/1P16576?external_reference=${uid}`, '_blank');
-    }
-
-    window.addEventListener('load', () => {
         setTimeout(() => {
-            const splash = document.getElementById('splash-screen');
-            splash.style.opacity = '0';
-            setTimeout(() => splash.style.visibility = 'hidden', 800);
-        }, 2500);
-    });
-
-    const frasesLojista = [
-        "Fidelizar um cliente é mais barato que conquistar um novo!",
-        "Dê cashback hoje e garanta o retorno do cliente amanhã.",
-        "Um cliente satisfeito é o melhor marketing da sua loja.",
-        "DAP CashBack: Transformando vendas em relacionamentos."
-    ];
-
-    function atualizarFrase() {
-        const index = Math.floor(Math.random() * frasesLojista.length);
-        const el = document.getElementById('frase-gold');
-        if(el) el.innerText = `"${frasesLojista[index]}"`;
-    }
-
-    function showSection(id, element) {
-        document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        document.getElementById('sec-' + id).classList.add('active');
-        element.classList.add('active');
-        if(id === 'inicio') atualizarFrase();
-    }
-
-    function toggleAuthMode(mode) {
-        document.getElementById('loginForm').style.display = mode === 'login' ? 'block' : 'none';
-        document.getElementById('cadForm').style.display = mode === 'cadastro' ? 'block' : 'none';
-        document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
-        document.getElementById('tabCad').classList.toggle('active', mode === 'cadastro');
-    }
-
-    function togglePass(id) {
-        const input = document.getElementById(id);
-        const icon = input.nextElementSibling;
-        input.type = input.type === 'password' ? 'text' : 'password';
-        if(icon) icon.classList.toggle('fa-eye-slash');
-    }
-
-    function esqueciSenha() {
-        const e = document.getElementById('email').value;
-        if(!e) return alert("Digite o e-mail da loja primeiro.");
-        auth.sendPasswordResetEmail(e).then(() => alert("E-mail de recuperação enviado!")).catch(err => alert(err.message));
-    }
-
-    async function cadastrarLoja() {
-        const n = document.getElementById('nomeLoja').value;
-        const e = document.getElementById('emailCad').value;
-        const s = document.getElementById('senhaCad').value;
-        if(!n || !e || s.length < 6) return alert("Preencha todos os campos corretamente.");
-        try {
-            const res = await auth.createUserWithEmailAndPassword(e, s);
-            await db.collection('lojistas').doc(res.user.uid).set({ 
-                nome: n, 
-                email: e, 
-                data: new Date(),
-                taxaAcumulada: 0 
-            });
-            alert("Conta de Lojista criada!"); location.reload();
-        } catch(err) { alert(err.message); }
+            if(confirm("Se concluiu o pagamento, clique em OK para validar.")) {
+                window.location.href = window.location.origin + window.location.pathname + "?pago=true";
+            }
+        }, 5000);
     }
 
     function login() {
@@ -372,16 +293,11 @@
             document.getElementById('menu-inferior').style.display = 'flex';
             atualizarFrase();
             monitorarBloqueio(res.user.uid);
-            
             db.collection('lojistas').doc(res.user.uid).get().then(doc => {
-                if(doc.exists){
-                    const d = doc.data();
-                    document.getElementById('nomeLojaPainel').innerText = d.nome.toUpperCase();
-                    document.getElementById('perfilNomeLoja').innerText = d.nome;
-                    document.getElementById('perfilEmailLoja').innerText = d.email;
-                }
+                document.getElementById('nomeLojaPainel').innerText = doc.data().nome.toUpperCase();
+                document.getElementById('perfilNomeLoja').innerText = doc.data().nome;
             });
-        }).catch(err => alert("Erro no login: " + err.message));
+        }).catch(err => alert("Erro: " + err.message));
     }
 
     let clienteRef = null;
@@ -391,87 +307,93 @@
         const cpf = document.getElementById('cpfBusca').value.trim();
         if(!cpf) return;
         const snap = await db.collection('usuarios').where('cpf', '==', cpf).get();
-        if(snap.empty) return alert("Cliente não encontrado.");
-        
+        if(snap.empty) return alert("Não encontrado.");
         clienteRef = snap.docs[0].ref;
         clienteRef.onSnapshot(doc => {
-            if(!doc.exists) return;
             const d = doc.data();
             saldoAtual = d.saldo || 0;
             document.getElementById('clienteCard').style.display = 'block';
             document.getElementById('opsArea').style.display = 'block';
             document.getElementById('avisoBusca').style.display = 'none';
             document.getElementById('nomeCli').innerText = d.nome.toUpperCase();
-            document.getElementById('cpfCli').innerText = "CPF: " + d.cpf;
             document.getElementById('saldoValue').innerText = `R$ ${saldoAtual.toFixed(2)}`;
-            carregarHistorico(d.cpf);
+            carregarHistorico(cpf);
         });
     }
 
     function autoCalcular() {
         const v = parseFloat(document.getElementById('valorVenda').value) || 0;
-        const p = parseFloat(document.getElementById('porcentagem').value) || 0;
-        document.getElementById('valorFinal').value = (v * (p/100)).toFixed(2);
+        document.getElementById('valorFinal').value = (v * 0.1).toFixed(2);
     }
 
     async function processarOperacao(tipo) {
-        if (!auth.currentUser) return;
-        const vInput = tipo === 'credito' ? document.getElementById('valorFinal').value : document.getElementById('valorResgate').value;
-        const v = parseFloat(vInput);
-
+        const v = parseFloat(tipo === 'credito' ? document.getElementById('valorFinal').value : document.getElementById('valorResgate').value);
         if(!v || v <= 0) return alert("Valor inválido.");
-        if(tipo === 'resgate' && v > saldoAtual) return alert("Saldo insuficiente.");
+        const batch = db.batch();
+        batch.update(clienteRef, { saldo: firebase.firestore.FieldValue.increment(tipo === 'credito' ? v : -v) });
+        
+        if (tipo === 'resgate') {
+            batch.update(db.collection('lojistas').doc(auth.currentUser.uid), { taxaAcumulada: firebase.firestore.FieldValue.increment(v * 0.10) });
+        }
 
-        if(!confirm(`Confirmar ${tipo}?`)) return;
+        const tRef = db.collection('transacoes').doc();
+        batch.set(tRef, { 
+            clienteCpf: document.getElementById('cpfBusca').value, 
+            lojistaUid: auth.currentUser.uid,
+            valor: v, 
+            tipo: tipo, 
+            servico: tipo === 'credito' ? "Crédito Cashback" : "Resgate de Pontos",
+            data: firebase.firestore.FieldValue.serverTimestamp() 
+        });
 
-        try {
-            const batch = db.batch();
-            const lojistaRef = db.collection('lojistas').doc(auth.currentUser.uid);
-
-            batch.update(clienteRef, { saldo: firebase.firestore.FieldValue.increment(tipo === 'credito' ? v : -v) });
-            
-            if (tipo === 'resgate') {
-                const taxa = v * 0.10;
-                batch.update(lojistaRef, { taxaAcumulada: firebase.firestore.FieldValue.increment(taxa) });
-            }
-
-            const tRef = db.collection('transacoes').doc();
-            batch.set(tRef, { 
-                clienteCpf: document.getElementById('cpfBusca').value, 
-                lojistaUid: auth.currentUser.uid,
-                valor: v, 
-                tipo: tipo, 
-                servico: tipo === 'credito' ? "Crédito Cashback" : "Resgate de Pontos",
-                data: firebase.firestore.FieldValue.serverTimestamp() 
-            });
-
-            await batch.commit();
-            alert("Operação realizada com sucesso!");
-        } catch(e) { alert("Erro no banco de dados."); }
+        await batch.commit();
+        alert("Sucesso!");
     }
 
     async function carregarHistorico(cpf) {
         const lista = document.getElementById('listaHistorico');
         const snap = await db.collection('transacoes').where('clienteCpf', '==', cpf).get();
         lista.innerHTML = '';
-        if(snap.empty) { lista.innerHTML = '<p style="text-align:center; font-size:0.8rem">Sem histórico recente.</p>'; return; }
+        if(snap.empty) { lista.innerHTML = '<p style="text-align:center; font-size:0.8rem">Sem histórico.</p>'; return; }
+        
         const docs = [];
         snap.forEach(d => docs.push(d.data()));
         docs.sort((a, b) => (b.data?.seconds || 0) - (a.data?.seconds || 0));
+        
         docs.forEach(t => {
             const isC = t.tipo === 'credito';
-            const dt = t.data ? new Date(t.data.seconds * 1000).toLocaleString('pt-BR') : 'Agora';
             lista.innerHTML += `
                 <div class="hist-item">
                     <div>
-                        <span class="badge" style="background:${isC?'#dcfce7':'#fee2e2'}; color:${isC?'#166534':'#991b1b'}">${t.tipo}</span>
-                        <b style="font-size:0.8rem">${t.servico}</b><br>
-                        <small style="font-size:0.6rem; color:#94a3b8">${dt}</small>
+                        <span class="badge" style="background:${isC?'#dcfce7':'#fee2e2'}">${t.tipo}</span><br>
+                        <small>${t.servico}</small>
                     </div>
                     <span class="${isC?'val-pos':'val-neg'}">${isC?'+':'-'} R$ ${t.valor.toFixed(2)}</span>
                 </div>`;
         });
     }
+
+    function showSection(id, el) {
+        document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('sec-' + id).classList.add('active');
+        el.classList.add('active');
+        if(id === 'inicio') atualizarFrase();
+    }
+
+    function toggleAuthMode(m) {
+        document.getElementById('loginForm').style.display = m === 'login' ? 'block' : 'none';
+        document.getElementById('cadForm').style.display = m === 'cadastro' ? 'block' : 'none';
+        document.getElementById('tabLogin').className = m === 'login' ? 'active' : '';
+        document.getElementById('tabCad').className = m === 'cadastro' ? 'active' : '';
+    }
+
+    function togglePass(id) {
+        const input = document.getElementById(id);
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    window.onload = () => setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 2500);
 </script>
 </body>
 </html>
