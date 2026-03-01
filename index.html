@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DAP CashBack - Lojista Gold Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -42,6 +42,26 @@
             100% { transform: scale(1); filter: drop-shadow(0 0 0px var(--gold)); }
         }
 
+        /* ESTILOS DO CHAT COMUNITÁRIO */
+        #modal-chat {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 9500; display: none; flex-direction: column;
+        }
+        .chat-header { background: var(--dark-blue); color: var(--gold); padding: 15px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; }
+        .msg-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; background: #f1f5f9; }
+        
+        .balao { padding: 10px 15px; border-radius: 18px; max-width: 85%; font-size: 0.85rem; line-height: 1.4; position: relative; }
+        .balao-me { align-self: flex-end; background: var(--gold); color: white; border-bottom-right-radius: 2px; }
+        .balao-outro { align-self: flex-start; background: #fff; color: #1e293b; border-bottom-left-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        .msg-autor { font-size: 0.65rem; font-weight: 700; margin-bottom: 3px; display: block; text-transform: uppercase; }
+        .balao-me .msg-autor { color: #eee; text-align: right; }
+        .balao-outro .msg-autor { color: var(--gold); }
+
+        .chat-footer { padding: 12px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center; }
+        .chat-input { flex: 1; padding: 14px 18px; border-radius: 30px; border: 1.5px solid #e2e8f0; outline: none; font-size: 0.95rem; }
+        .chat-send-btn { width: 48px; height: 48px; border-radius: 50%; background: var(--dark-blue); color: var(--gold); border: none; cursor: pointer; font-size: 1.1rem; }
+
         header { 
             background: var(--dark-blue); color: var(--gold); text-align: center; 
             padding: 2rem 1rem 3rem; font-size: 1.4rem; font-weight: 700; border-bottom: 4px solid var(--gold);
@@ -67,7 +87,7 @@
             background: #fff; display: flex; justify-content: space-around; align-items: center;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 1000; border-top: 1px solid #e2e8f0;
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; cursor: pointer; transition: 0.3s; width: 25%; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; cursor: pointer; transition: 0.3s; width: 20%; }
         .nav-item i { font-size: 1.3rem; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
         .nav-item.active { color: var(--dark-blue); }
         .nav-item.active i { background: #f1f5f9; color: var(--gold); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -117,6 +137,24 @@
     <div class="splash-logo"><i class="fa-solid fa-gem"></i></div>
     <div class="splash-title">DAP CashBack</div>
     <p style="color: #64748b; font-size: 0.8rem; margin-top: 10px;">Painel Business Lojista...</p>
+</div>
+
+<div id="modal-chat">
+    <div class="chat-header">
+        <i class="fa-solid fa-arrow-left" onclick="fecharChat()" style="cursor:pointer"></i>
+        <span>REDE SOCIAL DAP (GLOBAL)</span>
+        <i class="fa-solid fa-users" style="color:var(--gold)"></i>
+    </div>
+    
+    <div class="msg-container" id="mensagens-corpo">
+        </div>
+
+    <div class="chat-footer">
+        <input type="text" id="campo-texto-msg" class="chat-input" placeholder="Escreva para todos...">
+        <button onclick="enviarMensagem()" class="chat-send-btn">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
+    </div>
 </div>
 
 <header>DAP CashBack PRO</header>
@@ -203,6 +241,7 @@
 <nav class="bottom-nav" id="menu-inferior" style="display:none;">
     <div class="nav-item active" onclick="showSection('inicio', this)"><i class="fa-solid fa-house"></i><span>Início</span></div>
     <div class="nav-item" onclick="showSection('cashback', this)"><i class="fa-solid fa-hand-holding-dollar"></i><span>Operar</span></div>
+    <div class="nav-item" onclick="abrirChat()"><i class="fa-solid fa-globe"></i><span>Social</span></div>
     <div class="nav-item" onclick="showSection('notificacoes', this)"><i class="fa-solid fa-list-check"></i><span>Extrato</span></div>
     <div class="nav-item" onclick="showSection('perfil', this)"><i class="fa-solid fa-gears"></i><span>Painel</span></div>
 </nav>
@@ -248,60 +287,91 @@
         "Cada ponto de cashback é um 'até logo' para o seu cliente."
     ];
 
+    let userLogado = null;
+    let nomeUsuarioLogado = "Anônimo";
+    let clienteRef = null;
+
     function atualizarFrase() {
         const index = Math.floor(Math.random() * frasesLojista.length);
         document.getElementById('frase-gold').innerText = `"${frasesLojista[index]}"`;
     }
 
     function monitorarBloqueio(uid) {
-        verificarAutoDesbloqueio(uid);
         db.collection('lojistas').doc(uid).onSnapshot(doc => {
             if (doc.exists) {
-                const taxa = doc.data().taxaAcumulada || 0;
+                const d = doc.data();
+                const taxa = d.taxaAcumulada || 0;
+                nomeUsuarioLogado = d.nome || "Lojista";
                 document.getElementById('bloqueio-pagamento').style.display = taxa >= 30 ? 'flex' : 'none';
                 document.getElementById('info-taxa').innerText = "TAXA ACUMULADA: R$ " + taxa.toFixed(2);
             }
         });
     }
 
-    function verificarAutoDesbloqueio(uid) {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('pago') === 'true') {
-            db.collection('lojistas').doc(uid).update({ taxaAcumulada: 0 }).then(() => {
-                alert("Pagamento identificado! Sistema liberado.");
-                window.history.replaceState({}, document.title, window.location.pathname);
-            });
-        }
-    }
-
     function pagarTaxa() {
-        const uid = auth.currentUser.uid;
-        window.open(`https://mpago.la/1P16576?external_reference=${uid}`, '_blank');
-        setTimeout(() => {
-            if(confirm("Se concluiu o pagamento, clique em OK para validar.")) {
-                window.location.href = window.location.origin + window.location.pathname + "?pago=true";
-            }
-        }, 5000);
+        window.open(`https://mpago.la/1P16576?external_reference=${userLogado}`, '_blank');
     }
 
     function login() {
         const e = document.getElementById('email').value;
         const s = document.getElementById('senha').value;
         auth.signInWithEmailAndPassword(e, s).then(res => {
+            userLogado = res.user.uid;
             document.getElementById('authArea').style.display = 'none';
             document.getElementById('painel').style.display = 'block';
             document.getElementById('menu-inferior').style.display = 'flex';
             atualizarFrase();
-            monitorarBloqueio(res.user.uid);
-            db.collection('lojistas').doc(res.user.uid).get().then(doc => {
-                document.getElementById('nomeLojaPainel').innerText = doc.data().nome.toUpperCase();
-                document.getElementById('perfilNomeLoja').innerText = doc.data().nome;
+            monitorarBloqueio(userLogado);
+            db.collection('lojistas').doc(userLogado).get().then(doc => {
+                const nome = doc.data().nome;
+                document.getElementById('nomeLojaPainel').innerText = nome.toUpperCase();
+                document.getElementById('perfilNomeLoja').innerText = nome;
             });
         }).catch(err => alert("Erro: " + err.message));
     }
 
-    let clienteRef = null;
-    let saldoAtual = 0;
+    // --- NOVO CHAT GLOBAL ---
+    function abrirChat() {
+        document.getElementById('modal-chat').style.display = 'flex';
+        escutarMensagensGlobais();
+    }
+
+    function escutarMensagensGlobais() {
+        // Pega as últimas 50 mensagens do Mural Global
+        db.collection('mural_global').orderBy('timestamp', 'asc').limitToLast(50).onSnapshot(snap => {
+            const corpo = document.getElementById('mensagens-corpo');
+            corpo.innerHTML = '';
+            snap.forEach(doc => {
+                const m = doc.data();
+                const souEu = m.autorId === userLogado;
+                corpo.innerHTML += `
+                    <div class="balao ${souEu ? 'balao-me' : 'balao-outro'}">
+                        <span class="msg-autor">${m.autorNome}</span>
+                        ${m.texto}
+                    </div>`;
+            });
+            corpo.scrollTop = corpo.scrollHeight;
+        });
+    }
+
+    async function enviarMensagem() {
+        const campo = document.getElementById('campo-texto-msg');
+        const txt = campo.value.trim();
+        if(!txt) return;
+        campo.value = '';
+        
+        await db.collection('mural_global').add({
+            texto: txt,
+            autorNome: nomeUsuarioLogado,
+            autorId: userLogado,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    }
+
+    function fecharChat() {
+        document.getElementById('modal-chat').style.display = 'none';
+    }
+    // --- FIM CHAT ---
 
     async function buscarCliente() {
         const cpf = document.getElementById('cpfBusca').value.trim();
@@ -311,12 +381,11 @@
         clienteRef = snap.docs[0].ref;
         clienteRef.onSnapshot(doc => {
             const d = doc.data();
-            saldoAtual = d.saldo || 0;
             document.getElementById('clienteCard').style.display = 'block';
             document.getElementById('opsArea').style.display = 'block';
             document.getElementById('avisoBusca').style.display = 'none';
             document.getElementById('nomeCli').innerText = d.nome.toUpperCase();
-            document.getElementById('saldoValue').innerText = `R$ ${saldoAtual.toFixed(2)}`;
+            document.getElementById('saldoValue').innerText = `R$ ${d.saldo.toFixed(2)}`;
             carregarHistorico(cpf);
         });
     }
@@ -331,21 +400,9 @@
         if(!v || v <= 0) return alert("Valor inválido.");
         const batch = db.batch();
         batch.update(clienteRef, { saldo: firebase.firestore.FieldValue.increment(tipo === 'credito' ? v : -v) });
-        
-        if (tipo === 'resgate') {
-            batch.update(db.collection('lojistas').doc(auth.currentUser.uid), { taxaAcumulada: firebase.firestore.FieldValue.increment(v * 0.10) });
-        }
-
+        if (tipo === 'resgate') batch.update(db.collection('lojistas').doc(userLogado), { taxaAcumulada: firebase.firestore.FieldValue.increment(v * 0.10) });
         const tRef = db.collection('transacoes').doc();
-        batch.set(tRef, { 
-            clienteCpf: document.getElementById('cpfBusca').value, 
-            lojistaUid: auth.currentUser.uid,
-            valor: v, 
-            tipo: tipo, 
-            servico: tipo === 'credito' ? "Crédito Cashback" : "Resgate de Pontos",
-            data: firebase.firestore.FieldValue.serverTimestamp() 
-        });
-
+        batch.set(tRef, { clienteCpf: document.getElementById('cpfBusca').value, lojistaUid: userLogado, valor: v, tipo: tipo, servico: tipo === 'credito' ? "Crédito Cashback" : "Resgate", data: firebase.firestore.FieldValue.serverTimestamp() });
         await batch.commit();
         alert("Sucesso!");
     }
@@ -354,22 +411,9 @@
         const lista = document.getElementById('listaHistorico');
         const snap = await db.collection('transacoes').where('clienteCpf', '==', cpf).get();
         lista.innerHTML = '';
-        if(snap.empty) { lista.innerHTML = '<p style="text-align:center; font-size:0.8rem">Sem histórico.</p>'; return; }
-        
-        const docs = [];
-        snap.forEach(d => docs.push(d.data()));
-        docs.sort((a, b) => (b.data?.seconds || 0) - (a.data?.seconds || 0));
-        
-        docs.forEach(t => {
-            const isC = t.tipo === 'credito';
-            lista.innerHTML += `
-                <div class="hist-item">
-                    <div>
-                        <span class="badge" style="background:${isC?'#dcfce7':'#fee2e2'}">${t.tipo}</span><br>
-                        <small>${t.servico}</small>
-                    </div>
-                    <span class="${isC?'val-pos':'val-neg'}">${isC?'+':'-'} R$ ${t.valor.toFixed(2)}</span>
-                </div>`;
+        snap.forEach(d => {
+            const t = d.data();
+            lista.innerHTML += `<div class="hist-item"><div><span class="badge" style="background:${t.tipo==='credito'?'#dcfce7':'#fee2e2'}">${t.tipo}</span><br><small>${t.servico}</small></div><span class="${t.tipo==='credito'?'val-pos':'val-neg'}">${t.tipo==='credito'?'+':'-'} R$ ${t.valor.toFixed(2)}</span></div>`;
         });
     }
 
